@@ -153,7 +153,7 @@
 
 1. Set a Static IP for okd network interface `nmtui-edit ens224` or edit `/etc/sysconfig/network-scripts/ifcfg-ens224`
 
-   - **Address**: 192.168.22.1
+   - **Address**: 192.168.32.1
    - **DNS Server**: 127.0.0.1
    - **Search domain**: okd.lan
    - Never use this network for default route
@@ -253,7 +253,7 @@
    ```bash
    dig okd.lan
    # The following should return the answer okd-bootstrap.lab.okd.lan from the local server
-   dig -x 192.168.22.200
+   dig -x 192.168.32.200
    ```
 
 1. Install & configure DHCP
@@ -380,7 +380,7 @@
    Export the Share
 
    ```bash
-   echo "/shares/registry  192.168.22.0/24(rw,sync,root_squash,no_subtree_check,no_wdelay)" > /etc/exports
+   echo "/shares/registry  192.168.32.0/24(rw,sync,root_squash,no_subtree_check,no_wdelay)" > /etc/exports
    exportfs -rv
    ```
 
@@ -483,19 +483,19 @@
 
    ```bash
    # Bootstrap Node - okd-bootstrap
-   coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.22.1:8080/okd4/rhcos coreos.inst.ignition_url=http://192.168.22.1:8080/okd4/bootstrap.ign
+   coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.32.1:8080/okd4/rhcos coreos.inst.ignition_url=http://192.168.32.1:8080/okd4/bootstrap.ign
    ```
 
    ```bash
    # Each of the Control Plane Nodes - okd-cp-\#
-   coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.22.1:8080/okd4/rhcos coreos.inst.ignition_url=http://192.168.22.1:8080/okd4/master.ign
+   coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.32.1:8080/okd4/rhcos coreos.inst.ignition_url=http://192.168.32.1:8080/okd4/master.ign
    ```
 
 1. Power on the okd-w-\# hosts and select 'Tab' to enter boot configuration. Enter the following configuration:
 
    ```bash
    # Each of the Worker Nodes - okd-w-\#
-   coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.22.1:8080/okd4/rhcos coreos.inst.ignition_url=http://192.168.22.1:8080/okd4/worker.ign
+   coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.32.1:8080/okd4/rhcos coreos.inst.ignition_url=http://192.168.32.1:8080/okd4/worker.ign
    ```
 
 ## Monitor the Bootstrap Process
@@ -650,7 +650,7 @@
 1. You can collect logs from all cluster hosts by running the following command from the 'okd-svc' host:
 
    ```bash
-   ./openshift-install gather bootstrap --dir okd-install --bootstrap=192.168.22.200 --master=192.168.22.201 --master=192.168.22.202 --master=192.168.22.203
+   ./openshift-install gather bootstrap --dir okd-install --bootstrap=192.168.32.200 --master=192.168.32.201 --master=192.168.32.202 --master=192.168.32.203
    ```
 
 1. Modify the role of the Control Plane Nodes

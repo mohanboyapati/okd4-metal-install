@@ -8,35 +8,35 @@ $TTL    604800
 )
         IN      NS      okd-svc
 
-okd-svc.okd.lan.          IN      A       192.168.22.1
+okd-svc.okd.lan.          IN      A       192.168.32.1
 
 ; Temp Bootstrap Node
-okd-bootstrap.lab.okd.lan.        IN      A      192.168.22.200
+okd-bootstrap.lab.okd.lan.        IN      A      192.168.32.200
 
 ; Control Plane Nodes
-okd-cp-1.lab.okd.lan.         IN      A      192.168.22.201
-okd-cp-2.lab.okd.lan.         IN      A      192.168.22.202
-okd-cp-3.lab.okd.lan.         IN      A      192.168.22.203
+okd-cp-1.lab.okd.lan.         IN      A      192.168.32.201
+okd-cp-2.lab.okd.lan.         IN      A      192.168.32.202
+okd-cp-3.lab.okd.lan.         IN      A      192.168.32.203
 
 ; Worker Nodes
-okd-w-1.lab.okd.lan.        IN      A      192.168.22.211
-okd-w-2.lab.okd.lan.        IN      A      192.168.22.212
-okd-w-3.lab.okd.lan.        IN      A      192.168.22.213
+okd-w-1.lab.okd.lan.        IN      A      192.168.32.211
+okd-w-2.lab.okd.lan.        IN      A      192.168.32.212
+okd-w-3.lab.okd.lan.        IN      A      192.168.32.213
 
 ; OpenShift Internal - Load balancer
-api.lab.okd.lan.        IN    A    192.168.22.1
-api-int.lab.okd.lan.    IN    A    192.168.22.1
-*.apps.lab.okd.lan.     IN    A    192.168.22.1
+api.lab.okd.lan.        IN    A    192.168.32.1
+api-int.lab.okd.lan.    IN    A    192.168.32.1
+*.apps.lab.okd.lan.     IN    A    192.168.32.1
 
 ; ETCD Cluster
-etcd-0.lab.okd.lan.    IN    A     192.168.22.201
-etcd-1.lab.okd.lan.    IN    A     192.168.22.202
-etcd-2.lab.okd.lan.    IN    A     192.168.22.203
+etcd-0.lab.okd.lan.    IN    A     192.168.32.201
+etcd-1.lab.okd.lan.    IN    A     192.168.32.202
+etcd-2.lab.okd.lan.    IN    A     192.168.32.203
 
 ; OpenShift Internal SRV records (cluster name = lab)
 _etcd-server-ssl._tcp.lab.okd.lan.    86400     IN    SRV     0    10    2380    etcd-0.lab
 _etcd-server-ssl._tcp.lab.okd.lan.    86400     IN    SRV     0    10    2380    etcd-1.lab
 _etcd-server-ssl._tcp.lab.okd.lan.    86400     IN    SRV     0    10    2380    etcd-2.lab
 
-oauth-openshift.apps.lab.okd.lan.     IN     A     192.168.22.1
-console-openshift-console.apps.lab.okd.lan.     IN     A     192.168.22.1
+oauth-openshift.apps.lab.okd.lan.     IN     A     192.168.32.1
+console-openshift-console.apps.lab.okd.lan.     IN     A     192.168.32.1
