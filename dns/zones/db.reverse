@@ -1,5 +1,5 @@
 $TTL    604800
-@       IN      SOA     ocp-svc.ocp.lan. contact.ocp.lan (
+@       IN      SOA     okd-svc.okd.lan. contact.okd.lan (
                   1     ; Serial
              604800     ; Refresh
               86400     ; Retry
@@ -7,18 +7,18 @@ $TTL    604800
              604800     ; Minimum
 )
 
-  IN      NS      ocp-svc.ocp.lan.
+  IN      NS      okd-svc.okd.lan.
 
-1      IN    PTR    ocp-svc.ocp.lan.
-1      IN    PTR    api.lab.ocp.lan.
-1      IN    PTR    api-int.lab.ocp.lan.
+1      IN    PTR    okd-svc.okd.lan.
+1      IN    PTR    api.lab.okd.lan.
+1      IN    PTR    api-int.lab.okd.lan.
 ;
-200    IN    PTR    ocp-bootstrap.lab.ocp.lan.
+200    IN    PTR    okd-bootstrap.lab.okd.lan.
 ;
-201    IN    PTR    ocp-cp-1.lab.ocp.lan.
-202    IN    PTR    ocp-cp-2.lab.ocp.lan.
-203    IN    PTR    ocp-cp-3.lab.ocp.lan.
+201    IN    PTR    okd-cp-1.lab.okd.lan.
+202    IN    PTR    okd-cp-2.lab.okd.lan.
+203    IN    PTR    okd-cp-3.lab.okd.lan.
 ;
-211    IN    PTR    ocp-w-1.lab.ocp.lan.
-212    IN    PTR    ocp-w-2.lab.ocp.lan.
-213    IN    PTR    ocp-w-3.lab.ocp.lan.
+211    IN    PTR    okd-w-1.lab.okd.lan.
+212    IN    PTR    okd-w-2.lab.okd.lan.
+213    IN    PTR    okd-w-3.lab.okd.lan.

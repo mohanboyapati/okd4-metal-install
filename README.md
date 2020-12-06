@@ -41,60 +41,60 @@
 > VMware ESXi used in this guide
 
 1. Copy the CentOS 8 iso to an ESXi datastore
-1. Create a new Port Group called 'OCP' under Networking
+1. Create a new Port Group called 'okd' under Networking
 1. Create 3 Control Plane virtual machines with minimum settings:
-   - Name: ocp-cp-# (Example ocp-cp-1)
+   - Name: okd-cp-# (Example okd-cp-1)
    - 4vcpu
    - 8GB RAM
    - 50GB HDD
-   - NIC connected to the OCP network
+   - NIC connected to the okd network
    - Load the rhcos-X.X.X-x86_64-installer.x86_64.iso image into the CD/DVD drive
 1. Create 2 Worker virtual machines (or more if you want) with minimum settings:
-   - Name: ocp-w-# (Example ocp-w-1)
+   - Name: okd-w-# (Example okd-w-1)
    - 4vcpu
    - 8GB RAM
    - 50GB HDD
-   - NIC connected to the OCP network
+   - NIC connected to the okd network
    - Load the rhcos-X.X.X-x86_64-installer.x86_64.iso image into the CD/DVD drive
 1. Create a Bootstrap virtual machine (this vm will be deleted once installation completes) with minimum settings:
-   - Name: ocp-boostrap
+   - Name: okd-boostrap
    - 4vcpu
    - 8GB RAM
    - 50GB HDD
-   - NIC connected to the OCP network
+   - NIC connected to the okd network
    - Load the rhcos-X.X.X-x86_64-installer.x86_64.iso image into the CD/DVD drive
 1. Create a Services virtual machine with minimum settings:
-   - Name: ocp-svc
+   - Name: okd-svc
    - 4vcpu
    - 4GB RAM
    - 120GB HDD
    - NIC1 connected to the VM Network (LAN)
-   - NIC2 connected to the OCP network
+   - NIC2 connected to the okd network
    - Load the CentOS_8.iso image into the CD/DVD drive
 1. Boot all virtual machines so they each are assigned a MAC address
-1. Shut down all virtual machines except for 'ocp-svc'
+1. Shut down all virtual machines except for 'okd-svc'
 1. Use the VMware ESXi dashboard to record the MAC address of each vm, these will be used later to set static IPs
 
 ## Configure Environmental Services
 
-1. Install CentOS8 on the ocp-svc host
+1. Install CentOS8 on the okd-svc host
 
    - Remove the home dir partition and assign all free storage to '/'
    - Optionally you can install the 'Guest Tools' package to have monitoring and reporting in the VMware ESXi dashboard
-   - Enable the LAN NIC only to obtain a DHCP address from the LAN network and make note of the IP address (ocp-svc_IP_address) assigned to the vm
+   - Enable the LAN NIC only to obtain a DHCP address from the LAN network and make note of the IP address (okd-svc_IP_address) assigned to the vm
 
-1. Boot the ocp-svc VM
+1. Boot the okd-svc VM
 
-1. Move the files downloaded from the RedHat Cluster Manager site to the ocp-svc node
+1. Move the files downloaded from the RedHat Cluster Manager site to the okd-svc node
 
    ```bash
-   scp ~/Downloads/openshift-install-linux.tar.gz ~/Downloads/openshift-client-linux.tar.gz ~/Downloads/rhcos-x.x.x-x86_64-installer.x86_64.iso root@{ocp-svc_IP_address}:/root/
+   scp ~/Downloads/openshift-install-linux.tar.gz ~/Downloads/openshift-client-linux.tar.gz ~/Downloads/rhcos-x.x.x-x86_64-installer.x86_64.iso root@{okd-svc_IP_address}:/root/
    ```
 
-1. SSH to the ocp-svc vm
+1. SSH to the okd-svc vm
 
    ```bash
-   ssh root@{ocp-svc_IP_address}
+   ssh root@{okd-svc_IP_address}
    ```
 
 1. Extract Client tools and copy them to `/usr/local/bin`
@@ -129,10 +129,10 @@
    dnf install git -y
    ```
 
-1. Download [config files](https://github.com/mohanboyapati/ocp4-metal-install) for each of the services
+1. Download [config files](https://github.com/mohanboyapati/okd4-metal-install) for each of the services
 
    ```bash
-   git clone https://github.com/mohanboyapati/ocp4-metal-install
+   git clone https://github.com/mohanboyapati/okd4-metal-install
    ```
 
 1. OPTIONAL: Create a file '~/.vimrc' and paste the following (this helps with editing in vim, particularly yaml files):
@@ -151,11 +151,11 @@
    export KUBE_EDITOR="vim"
    ```
 
-1. Set a Static IP for OCP network interface `nmtui-edit ens224` or edit `/etc/sysconfig/network-scripts/ifcfg-ens224`
+1. Set a Static IP for okd network interface `nmtui-edit ens224` or edit `/etc/sysconfig/network-scripts/ifcfg-ens224`
 
    - **Address**: 192.168.22.1
    - **DNS Server**: 127.0.0.1
-   - **Search domain**: ocp.lan
+   - **Search domain**: okd.lan
    - Never use this network for default route
    - Automatically connect
 
@@ -215,8 +215,8 @@
    Apply configuration
 
    ```bash
-   \cp ~/ocp4-metal-install/dns/named.conf /etc/named.conf
-   cp -R ~/ocp4-metal-install/dns/zones /etc/named/
+   \cp ~/okd4-metal-install/dns/named.conf /etc/named.conf
+   cp -R ~/okd4-metal-install/dns/zones /etc/named/
    ```
 
    Configure the firewall for DNS
@@ -234,7 +234,7 @@
    systemctl status named
    ```
 
-   > At the moment DNS will still be pointing to the LAN DNS server. You can see this by testing with `dig ocp.lan`.
+   > At the moment DNS will still be pointing to the LAN DNS server. You can see this by testing with `dig okd.lan`.
 
    Change the LAN nic (ens192) to use 127.0.0.1 for DNS AND ensure `Ignore automatically Obtained DNS parameters` is ticked
 
@@ -251,8 +251,8 @@
    Confirm dig now sees the correct DNS results by using the DNS Server running locally
 
    ```bash
-   dig ocp.lan
-   # The following should return the answer ocp-bootstrap.lab.ocp.lan from the local server
+   dig okd.lan
+   # The following should return the answer okd-bootstrap.lab.okd.lan from the local server
    dig -x 192.168.22.200
    ```
 
@@ -267,7 +267,7 @@
    Edit dhcpd.conf from the cloned git repo to have the correct mac address for each host and copy the conf file to the correct location for the DHCP service to use
 
    ```bash
-   \cp ~/ocp4-metal-install/dhcpd.conf /etc/dhcp/dhcpd.conf
+   \cp ~/okd4-metal-install/dhcpd.conf /etc/dhcp/dhcpd.conf
    ```
 
    Configure the Firewall
@@ -331,12 +331,12 @@
    Copy HAProxy config
 
    ```bash
-   \cp ~/ocp4-metal-install/haproxy.cfg /etc/haproxy/haproxy.cfg
+   \cp ~/okd4-metal-install/haproxy.cfg /etc/haproxy/haproxy.cfg
    ```
 
    Configure the Firewall
 
-   > Note: Opening port 9000 in the external zone allows access to HAProxy stats that are useful for monitoring and troubleshooting. The UI can be accessed at: `http://{ocp-svc_IP_address}:9000/stats`
+   > Note: Opening port 9000 in the external zone allows access to HAProxy stats that are useful for monitoring and troubleshooting. The UI can be accessed at: `http://{okd-svc_IP_address}:9000/stats`
 
    ```bash
    firewall-cmd --add-port=6443/tcp --zone=internal --permanent # kube-api-server on control plane nodes
@@ -411,13 +411,13 @@
 1. Create an install directory
 
    ```bash
-   mkdir ~/ocp-install
+   mkdir ~/okd-install
    ```
 
 1. Copy the install-config.yaml included in the clones repository to the install directory
 
    ```bash
-   cp ~/ocp4-metal-install/install-config.yaml ~/ocp-install
+   cp ~/okd4-metal-install/install-config.yaml ~/okd-install
    ```
 
 1. Update the install-config.yaml with your own pull-secret and ssh key.
@@ -426,100 +426,100 @@
    - Line 24 should contain the contents of your '~/.ssh/id_rsa.pub'
 
    ```bash
-   vim ~/ocp-install/install-config.yaml
+   vim ~/okd-install/install-config.yaml
    ```
 
 1. Generate Kubernetes manifest files
 
    ```bash
-   ~/openshift-install create manifests --dir ~/ocp-install
+   ~/openshift-install create manifests --dir ~/okd-install
    ```
 
    > A warning is shown about making the control plane nodes schedulable. It is up to you if you want to run workloads on the Control Plane nodes. If you dont want to you can disable this with:
-   > `sed -i 's/mastersSchedulable: true/mastersSchedulable: false/' ~/ocp-install/manifests/cluster-scheduler-02-config.yml`.
+   > `sed -i 's/mastersSchedulable: true/mastersSchedulable: false/' ~/okd-install/manifests/cluster-scheduler-02-config.yml`.
    > Make any other custom changes you like to the core Kubernetes manifest files.
 
    Generate the Ignition config and Kubernetes auth files
 
    ```bash
-   ~/openshift-install create ignition-configs --dir ~/ocp-install/
+   ~/openshift-install create ignition-configs --dir ~/okd-install/
    ```
 
 1. Create a hosting directory to serve the configuration files for the OpenShift booting process
 
    ```bash
-   mkdir /var/www/html/ocp4
+   mkdir /var/www/html/okd4
    ```
 
 1. Copy all generated install files to the new web server directory
 
    ```bash
-   cp -R ~/ocp-install/* /var/www/html/ocp4
+   cp -R ~/okd-install/* /var/www/html/okd4
    ```
 
 1. Move the Core OS image to the web server directory (later you need to type this path multiple times so it is a good idea to shorten the name)
 
    ```bash
-   mv ~/rhcos-X.X.X-x86_64-metal.x86_64.raw.gz /var/www/html/ocp4/rhcos
+   mv ~/rhcos-X.X.X-x86_64-metal.x86_64.raw.gz /var/www/html/okd4/rhcos
    ```
 
 1. Change ownership and permissions of the web server directory
 
    ```bash
-   chcon -R -t httpd_sys_content_t /var/www/html/ocp4/
-   chown -R apache: /var/www/html/ocp4/
-   chmod 755 /var/www/html/ocp4/
+   chcon -R -t httpd_sys_content_t /var/www/html/okd4/
+   chown -R apache: /var/www/html/okd4/
+   chmod 755 /var/www/html/okd4/
    ```
 
-1. Confirm you can see all files added to the `/var/www/html/ocp4/` dir through Apache
+1. Confirm you can see all files added to the `/var/www/html/okd4/` dir through Apache
 
    ```bash
-   curl localhost:8080/ocp4/
+   curl localhost:8080/okd4/
    ```
 
 ## Deploy OpenShift
 
-1. Power on the ocp-bootstrap host and ocp-cp-\# hosts and select 'Tab' to enter boot configuration. Enter the following configuration:
+1. Power on the okd-bootstrap host and okd-cp-\# hosts and select 'Tab' to enter boot configuration. Enter the following configuration:
 
    ```bash
-   # Bootstrap Node - ocp-bootstrap
-   coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.22.1:8080/ocp4/rhcos coreos.inst.ignition_url=http://192.168.22.1:8080/ocp4/bootstrap.ign
+   # Bootstrap Node - okd-bootstrap
+   coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.22.1:8080/okd4/rhcos coreos.inst.ignition_url=http://192.168.22.1:8080/okd4/bootstrap.ign
    ```
 
    ```bash
-   # Each of the Control Plane Nodes - ocp-cp-\#
-   coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.22.1:8080/ocp4/rhcos coreos.inst.ignition_url=http://192.168.22.1:8080/ocp4/master.ign
+   # Each of the Control Plane Nodes - okd-cp-\#
+   coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.22.1:8080/okd4/rhcos coreos.inst.ignition_url=http://192.168.22.1:8080/okd4/master.ign
    ```
 
-1. Power on the ocp-w-\# hosts and select 'Tab' to enter boot configuration. Enter the following configuration:
+1. Power on the okd-w-\# hosts and select 'Tab' to enter boot configuration. Enter the following configuration:
 
    ```bash
-   # Each of the Worker Nodes - ocp-w-\#
-   coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.22.1:8080/ocp4/rhcos coreos.inst.ignition_url=http://192.168.22.1:8080/ocp4/worker.ign
+   # Each of the Worker Nodes - okd-w-\#
+   coreos.inst.install_dev=sda coreos.inst.image_url=http://192.168.22.1:8080/okd4/rhcos coreos.inst.ignition_url=http://192.168.22.1:8080/okd4/worker.ign
    ```
 
 ## Monitor the Bootstrap Process
 
-1. You can monitor the bootstrap process from the ocp-svc host at different log levels (debug, error, info)
+1. You can monitor the bootstrap process from the okd-svc host at different log levels (debug, error, info)
 
    ```bash
-   ~/openshift-install --dir ~/ocp-install wait-for bootstrap-complete --log-level=debug
+   ~/openshift-install --dir ~/okd-install wait-for bootstrap-complete --log-level=debug
    ```
 
-1. Once bootstrapping is complete the ocp-boostrap node [can be removed](#remove-the-bootstrap-node)
+1. Once bootstrapping is complete the okd-boostrap node [can be removed](#remove-the-bootstrap-node)
 
 ## Remove the Bootstrap Node
 
-1. Remove all references to the `ocp-bootstrap` host from the `/etc/haproxy/haproxy.cfg` file
+1. Remove all references to the `okd-bootstrap` host from the `/etc/haproxy/haproxy.cfg` file
 
    ```bash
    # Two entries
    vim /etc/haproxy/haproxy.cfg
-   # Restart HAProxy - If you are still watching HAProxy stats console you will see that the ocp-boostrap host has been removed from the backends.
+   # Restart HAProxy - If you are still watching HAProxy stats console you will see that the okd-boostrap host has been removed from the backends.
    systemctl reload haproxy
    ```
 
-1. The ocp-bootstrap host can now be safely shutdown and deleted from the VMware ESXi Console, the host is no longer required
+1. The okd-bootstrap host can now be safely shutdown and deleted from the VMware ESXi Console, the host is no longer required
 
 ## Wait for installation to complete
 
@@ -528,17 +528,17 @@
 1. Collect the OpenShift Console address and kubeadmin credentials from the output of the install-complete event
 
    ```bash
-   ~/openshift-install --dir ~/ocp-install wait-for install-complete
+   ~/openshift-install --dir ~/okd-install wait-for install-complete
    ```
 
 1. Continue to join the worker nodes to the cluster in a new tab whilst waiting for the above command to complete
 
 ## Join Worker Nodes
 
-1. Setup 'oc' and 'kubectl' clients on the ocp-svc machine
+1. Setup 'oc' and 'kubectl' clients on the okd-svc machine
 
    ```bash
-   export KUBECONFIG=~/ocp-install/auth/kubeconfig
+   export KUBECONFIG=~/okd-install/auth/kubeconfig
    # Test auth by viewing cluster nodes
    oc get nodes
    ```
@@ -594,7 +594,7 @@
 1. Create the persistent volume for the 'image-registry-storage' pvc to bind to
 
    ```bash
-   oc create -f ~/ocp4-metal-install/manifest/registry-pv.yaml
+   oc create -f ~/okd4-metal-install/manifest/registry-pv.yaml
    ```
 
 1. After a short wait the 'image-registry-storage' pvc should now be bound
@@ -607,10 +607,10 @@
 
 1. Apply the `oauth-htpasswd.yaml` file to the cluster
 
-   > This will create a user 'admin' with the password 'password'. To set a different username and password substitue the htpasswd key in the '~/ocp4-metal-install/manifest/oauth-htpasswd.yaml' file with the output of `htpasswd -n -B -b <username> <password>`
+   > This will create a user 'admin' with the password 'password'. To set a different username and password substitue the htpasswd key in the '~/okd4-metal-install/manifest/oauth-htpasswd.yaml' file with the output of `htpasswd -n -B -b <username> <password>`
 
    ```bash
-   oc apply -f ~/ocp4-metal-install/manifest/oauth-htpasswd.yaml
+   oc apply -f ~/okd4-metal-install/manifest/oauth-htpasswd.yaml
    ```
 
 1. Assign the new user (admin) admin permissions
@@ -630,27 +630,27 @@
 1. Append the following to your local workstations `/etc/hosts` file:
 
    > From your local workstation
-   > If you do not want to add an entry for each new service made available on OpenShift you can configure the ocp-svc DNS server to serve externally and create a wildcard entry for \*.apps.lab.ocp.lan
+   > If you do not want to add an entry for each new service made available on OpenShift you can configure the okd-svc DNS server to serve externally and create a wildcard entry for \*.apps.lab.okd.lan
 
    ```bash
    # Open the hosts file
    sudo vi /etc/hosts
 
    # Append the following entries:
-   192.168.0.96 ocp-svc api.lab.ocp.lan console-openshift-console.apps.lab.ocp.lan oauth-openshift.apps.lab.ocp.lan downloads-openshift-console.apps.lab.ocp.lan alertmanager-main-openshift-monitoring.apps.lab.ocp.lan grafana-openshift-monitoring.apps.lab.ocp.lan prometheus-k8s-openshift-monitoring.apps.lab.ocp.lan thanos-querier-openshift-monitoring.apps.lab.ocp.lan
+   192.168.0.96 okd-svc api.lab.okd.lan console-openshift-console.apps.lab.okd.lan oauth-openshift.apps.lab.okd.lan downloads-openshift-console.apps.lab.okd.lan alertmanager-main-openshift-monitoring.apps.lab.okd.lan grafana-openshift-monitoring.apps.lab.okd.lan prometheus-k8s-openshift-monitoring.apps.lab.okd.lan thanos-querier-openshift-monitoring.apps.lab.okd.lan
    ```
 
-1. Navigate to the [OpenShift Console URL](https://console-openshift-console.apps.lab.ocp.lan) and log in as the 'admin' user
+1. Navigate to the [OpenShift Console URL](https://console-openshift-console.apps.lab.okd.lan) and log in as the 'admin' user
 
    > You will get self signed certificate warnings that you can ignore
-   > If you need to login as kubeadmin and need to the password again you can retrieve it with: `cat ~/ocp-install/auth/kubeadmin-password`
+   > If you need to login as kubeadmin and need to the password again you can retrieve it with: `cat ~/okd-install/auth/kubeadmin-password`
 
 ## Troubleshooting
 
-1. You can collect logs from all cluster hosts by running the following command from the 'ocp-svc' host:
+1. You can collect logs from all cluster hosts by running the following command from the 'okd-svc' host:
 
    ```bash
-   ./openshift-install gather bootstrap --dir ocp-install --bootstrap=192.168.22.200 --master=192.168.22.201 --master=192.168.22.202 --master=192.168.22.203
+   ./openshift-install gather bootstrap --dir okd-install --bootstrap=192.168.22.200 --master=192.168.22.201 --master=192.168.22.202 --master=192.168.22.203
    ```
 
 1. Modify the role of the Control Plane Nodes
